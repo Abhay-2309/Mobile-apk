@@ -1,0 +1,13 @@
+# MeshLink Rescue Configuration Constants
+
+MAGIC_HEADER = 0x4D  # 'M'
+PROTOCOL_VERSION = 0x01
+PACKET_TYPE_SOS = 0x01
+PACKET_SIZE_BYTES = 28
+MANUFACTURER_ID = 0x4D4C  # "ML" (19788)
+
+# Valid Field Constraints
+MAX_TTL = 10
+MAX_HOPS = 100
+MAX_BATTERY = 100
+MAX_SEVERITY = 2
