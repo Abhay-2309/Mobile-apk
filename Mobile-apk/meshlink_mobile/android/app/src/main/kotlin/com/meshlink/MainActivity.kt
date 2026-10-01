@@ -135,6 +135,19 @@ class MainActivity : FlutterActivity() {
                     )
                     result.success(diagnostics)
                 }
+                "getNodeId" -> {
+                    // Return the persistent MeshLink Node ID.
+                    // This MUST be the same value used for presence advertising
+                    // so that SOS and presence resolve to the same peer identity.
+                    val prefs = getSharedPreferences("meshlink_prefs", Context.MODE_PRIVATE)
+                    var nodeId = prefs.getLong("local_node_id", 0L)
+                    if (nodeId == 0L) {
+                        // Generate if not yet created (matches MeshRuntime init logic)
+                        nodeId = java.util.Random().nextInt(0x7FFFFFFF).toLong()
+                        prefs.edit().putLong("local_node_id", nodeId).apply()
+                    }
+                    result.success(nodeId)
+                }
                 else -> {
                     result.notImplemented()
                 }

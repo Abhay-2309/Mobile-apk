@@ -17,7 +17,8 @@ class SosService extends ChangeNotifier {
   bool _isBroadcasting = false;
   bool _isLoading = false;
   late String _senderIdStr;
-  late int _senderIdHash;
+  int _senderIdHash = 0;
+  bool _identityInitialized = false;
 
   SosService({
     LocationService? locationService,
@@ -27,20 +28,31 @@ class SosService extends ChangeNotifier {
   })  : _locationService = locationService ?? LocationService(),
         _batteryService = batteryService ?? BatteryService(),
         _store = store ?? LocalMessageStore(),
-        _bleService = bleService ?? BlePlatformService() {
-    _initDeviceIdentity();
-  }
+        _bleService = bleService ?? BlePlatformService();
 
   SosMessage? get activeSos => _activeSos;
   bool get isBroadcasting => _isBroadcasting;
   bool get isLoading => _isLoading;
   String get senderIdStr => _senderIdStr;
 
-  void _initDeviceIdentity() {
-    final rng = Random();
-    final randomSuffix = rng.nextInt(0xFFFFFF).toRadixString(16).toUpperCase().padLeft(6, '0');
-    _senderIdStr = 'DEV-$randomSuffix';
-    _senderIdHash = rng.nextInt(0xFFFFFFFF);
+  /// Fetch the persistent MeshLink Node ID from the native layer.
+  /// This is the SAME ID used for presence advertising (4D 50 + Node ID),
+  /// ensuring SOS and presence resolve to ONE peer in PeerRegistry.
+  Future<void> _ensureIdentityInitialized() async {
+    if (_identityInitialized) return;
+
+    final nodeId = await _bleService.getNodeId();
+    if (nodeId != 0) {
+      _senderIdHash = nodeId;
+    } else {
+      // Fallback: should not happen if mesh service is running
+      final rng = Random();
+      _senderIdHash = rng.nextInt(0xFFFFFFFF);
+    }
+
+    final hexStr = (_senderIdHash & 0xFFFFFF).toRadixString(16).toUpperCase().padLeft(6, '0');
+    _senderIdStr = 'DEV-$hexStr';
+    _identityInitialized = true;
   }
 
   /// Triggers full SOS creation flow:
@@ -50,6 +62,9 @@ class SosService extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Ensure we have the persistent Node ID before creating the SOS
+      await _ensureIdentityInitialized();
+
       final location = await _locationService.getCurrentLocation();
       final battery = await _batteryService.getBatteryLevel();
 

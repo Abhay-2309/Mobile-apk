@@ -18,6 +18,106 @@ class SosMainScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white70),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+      ),
+      drawer: Drawer(
+        backgroundColor: const Color(0xFF1E293B),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Colors.white12),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'MESHLINK RESCUE',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Offline Emergency BLE Mesh',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.4),
+                        fontSize: 12,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Mesh Status
+              _DrawerItem(
+                icon: Icons.cell_tower,
+                iconColor: isMeshRunning ? Colors.greenAccent : Colors.redAccent,
+                title: isMeshRunning ? 'Mesh Active' : 'Mesh Inactive',
+                subtitle: isMeshRunning
+                    ? 'Scanner running'
+                    : 'Not connected',
+              ),
+
+              // Nearby Devices
+              _DrawerItem(
+                icon: Icons.devices,
+                iconColor: nearbyPeerCount > 0 ? Colors.cyanAccent : Colors.white38,
+                title: nearbyPeerCount == 1
+                    ? '1 Nearby Device'
+                    : '$nearbyPeerCount Nearby Devices',
+                subtitle: nearbyPeerCount > 0
+                    ? 'MeshLink nodes in range'
+                    : 'No devices detected',
+              ),
+
+              // SOS Status
+              if (isBroadcasting)
+                _DrawerItem(
+                  icon: Icons.sos,
+                  iconColor: Colors.redAccent,
+                  title: 'SOS Broadcasting',
+                  subtitle: 'Distress signal active',
+                ),
+
+              const Spacer(),
+
+              // Version info
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Text(
+                  'MeshLink v1.0',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.2),
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: Column(
@@ -125,53 +225,93 @@ class SosMainScreen extends StatelessWidget {
 
               const Spacer(flex: 3),
 
-              // Mesh status indicator with peer count
+              // Mesh status indicator (compact, no peer count)
               Padding(
                 padding: const EdgeInsets.only(bottom: 24.0),
-                child: Column(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isMeshRunning ? Colors.greenAccent : Colors.redAccent,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          isMeshRunning ? 'Mesh Active' : 'Mesh Inactive',
-                          style: TextStyle(
-                            color: isMeshRunning
-                                ? Colors.greenAccent.withOpacity(0.7)
-                                : Colors.redAccent.withOpacity(0.7),
-                            fontSize: 12,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (isMeshRunning) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        nearbyPeerCount == 1
-                            ? '1 nearby device'
-                            : '$nearbyPeerCount nearby devices',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.4),
-                          fontSize: 11,
-                        ),
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isMeshRunning ? Colors.greenAccent : Colors.redAccent,
                       ),
-                    ],
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isMeshRunning ? 'Mesh Active' : 'Mesh Inactive',
+                      style: TextStyle(
+                        color: isMeshRunning
+                            ? Colors.greenAccent.withOpacity(0.7)
+                            : Colors.redAccent.withOpacity(0.7),
+                        fontSize: 12,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DrawerItem extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+
+  const _DrawerItem({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

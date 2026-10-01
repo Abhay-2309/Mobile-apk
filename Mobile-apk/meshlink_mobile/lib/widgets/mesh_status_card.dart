@@ -4,14 +4,12 @@ class MeshStatusCard extends StatelessWidget {
   final bool isMeshActive;
   final bool isBleReady;
   final bool isGpsReady;
-  final int batteryLevel;
 
   const MeshStatusCard({
     super.key,
     required this.isMeshActive,
     required this.isBleReady,
     required this.isGpsReady,
-    required this.batteryLevel,
   });
 
   @override
@@ -61,12 +59,6 @@ class MeshStatusCard extends StatelessWidget {
                   label: 'GPS',
                   value: isGpsReady ? 'Ready' : 'Searching',
                   isOk: isGpsReady,
-                ),
-                _buildStatusItem(
-                  icon: Icons.battery_charging_full,
-                  label: 'Battery',
-                  value: '$batteryLevel%',
-                  isOk: batteryLevel > 20,
                 ),
               ],
             ),

@@ -209,6 +209,10 @@ class MeshRuntime(
         packetRouter.isVictimModeActive = true
         packetRouter.markSeen(messageId)
 
+        // Refresh all peers' timestamps so they survive the presence→SOS
+        // advertising transition without being evicted as stale
+        peerRegistry.refreshAll()
+
         // Stop presence while SOS is active (SOS ad already identifies us)
         withContext(Dispatchers.Main) {
             stopPresenceAdvertising()
@@ -264,6 +268,11 @@ class MeshRuntime(
      */
     fun stopSosBroadcast() {
         Log.d(TAG, "Stopping SOS broadcast")
+
+        // Refresh all peers' timestamps so they survive the SOS→presence
+        // advertising transition without being evicted as stale
+        peerRegistry.refreshAll()
+
         activeSosSenderIdHash = null
         advertiser.stopAdvertising()
         packetRouter.isVictimModeActive = false

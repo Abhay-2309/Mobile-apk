@@ -86,6 +86,18 @@ class PeerRegistry {
         updateCount()
     }
 
+    /**
+     * Refresh all existing peers' lastSeen timestamps to [now].
+     * Called during advertising transitions (e.g. presence → SOS) to prevent
+     * stale eviction while the BLE stack stabilizes.
+     */
+    fun refreshAll() {
+        val now = System.currentTimeMillis()
+        for (peer in peers.values) {
+            peer.lastSeenMs = now
+        }
+    }
+
     private fun updateCount() {
         _peerCount.value = peers.size
     }

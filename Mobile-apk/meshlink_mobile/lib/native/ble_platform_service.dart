@@ -122,4 +122,17 @@ class BlePlatformService {
       return {};
     }
   }
+  /// Get the persistent MeshLink Node ID from the native layer.
+  /// This is the SAME identity used for presence advertising (4D 50 + Node ID).
+  /// SOS packets MUST use this as senderIdHash so that presence and SOS
+  /// resolve to the same peer in PeerRegistry.
+  Future<int> getNodeId() async {
+    try {
+      final int? result = await _channel.invokeMethod('getNodeId');
+      return result ?? 0;
+    } on PlatformException catch (e) {
+      print('BlePlatformService.getNodeId failed: ${e.message}');
+      return 0;
+    }
+  }
 }

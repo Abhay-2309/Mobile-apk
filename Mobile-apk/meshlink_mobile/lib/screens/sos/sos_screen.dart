@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/sos_service.dart';
-import '../../services/battery_service.dart';
 import '../../services/mesh_service.dart';
 import '../../widgets/sos_button.dart';
 import '../../widgets/mesh_status_card.dart';
@@ -15,20 +14,6 @@ class SosScreen extends StatefulWidget {
 }
 
 class _SosScreenState extends State<SosScreen> {
-  int _batteryLevel = 82;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadBattery();
-  }
-
-  Future<void> _loadBattery() async {
-    final battery = await BatteryService().getBatteryLevel();
-    if (mounted) {
-      setState(() => _batteryLevel = battery);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +37,6 @@ class _SosScreenState extends State<SosScreen> {
               isMeshActive: meshService.isMeshRunning,
               isBleReady: true,
               isGpsReady: true,
-              batteryLevel: _batteryLevel,
             ),
             const SizedBox(height: 36),
             SosButton(
